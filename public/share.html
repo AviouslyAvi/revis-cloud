@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revis — shared track</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #121212; color: #e8e8e8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px;
+    }
+    .card {
+      background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px;
+      padding: 40px; max-width: 420px; width: 100%; text-align: center;
+    }
+    .logo { font-size: 14px; color: #555; margin-bottom: 24px; letter-spacing: -0.3px; }
+    .logo span { color: #a78bfa; }
+    .track-name { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+    .subtitle { font-size: 14px; color: #888; margin-bottom: 24px; }
+    .password-section { margin-bottom: 24px; }
+    .password-section input {
+      background: #121212; border: 1px solid #2a2a2a; color: #e8e8e8; border-radius: 8px;
+      padding: 10px 14px; width: 100%; font-size: 14px; outline: none; margin-bottom: 12px;
+    }
+    .password-section input:focus { border-color: #a78bfa; }
+    .error { color: #f87171; font-size: 13px; margin-bottom: 12px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 500;
+      border: none; cursor: pointer; transition: all 0.15s; width: 100%;
+    }
+    .btn-primary { background: #a78bfa; color: #111; }
+    .btn-primary:hover { filter: brightness(1.1); }
+    .player-section { display: none; }
+    .player-section.active { display: block; }
+    canvas { width: 100%; height: 60px; margin: 20px 0 8px; cursor: pointer; border-radius: 8px; }
+    .time-row { display: flex; justify-content: space-between; font-size: 12px; color: #888; margin-bottom: 16px; }
+    .play-btn {
+      width: 56px; height: 56px; border-radius: 50%; background: #a78bfa;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: none; cursor: pointer; transition: filter 0.15s;
+    }
+    .play-btn:hover { filter: brightness(1.1); }
+    .play-btn svg { fill: #111; width: 22px; height: 22px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo" style="font-size:16px;font-weight:600;letter-spacing:-0.3px;"><span style="color:#a78bfa;">R</span>evis</div>
+    <div class="track-name" id="trackName">Loading...</div>
+    <div class="subtitle" id="subtitle"></div>
+
+    <div id="passwordSection" class="password-section" style="display:none;">
+      <input type="password" id="passwordInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')unlock()">
+      <div class="error" id="errorMsg" style="display:none;"></div>
+      <button class="btn btn-primary" onclick="unlock()">Unlock</button>
+    </div>
+
+    <div id="openSection" style="display:none;">
+      <button class="btn btn-primary" onclick="startListening()">
+        <svg width="16" height="16" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="currentColor"/></svg>
+        Listen
+      </button>
+    </div>
+
+    <div class="player-section" id="playerSection">
+      <canvas id="waveform"></canvas>
+      <div class="time-row">
+        <span id="curTime">0:00</span>
+        <span id="totTime">0:00</span>
+      </div>
+      <button class="play-btn" id="playBtn" onclick="togglePlay()">
+        <svg id="playIco" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        <svg id="pauseIco" viewBox="0 0 24 24" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      </button>
+    </div>
+  </div>
+
+<script>
+  const slug = location.pathname.split('/').pop();
+  let trackId = null, audioUrl = null, audio = new Audio(), isPlaying = false;
+  let audioCtx, analyser, source, animFrame;
+
+  async function init() {
+    const res = await fetch(`/api/shared/${slug}`);
+    if (!res.ok) { document.getElementById('trackName').textContent = 'Track not found'; return; }
+    const data = await res.json();
+    document.getElementById('trackName').textContent = data.trackName;
+    document.title = `${data.trackName} — Revis`;
+    if (data.hasPassword) {
+      document.getElementById('passwordSection').style.display = 'block';
+      document.getElementById('subtitle').textContent = 'This track is password protected';
+    } else {
+      document.getElementById('openSection').style.display = 'block';
+      document.getElementById('subtitle').textContent = 'Shared with you';
+    }
+  }
+
+  async function unlock() {
+    const pw = document.getElementById('passwordInput').value;
+    const res = await fetch(`/api/shared/${slug}/play`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw }),
+    });
+    if (!res.ok) {
+      document.getElementById('errorMsg').textContent = 'Wrong password';
+      document.getElementById('errorMsg').style.display = 'block';
+      return;
+    }
+    const data = await res.json();
+    trackId = data.trackId;
+    audioUrl = data.audioUrl;
+    showPlayer();
+  }
+
+  async function startListening() {
+    const res = await fetch(`/api/shared/${slug}/play`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    const data = await res.json();
+    trackId = data.trackId;
+    audioUrl = data.audioUrl;
+    showPlayer();
+  }
+
+  function showPlayer() {
+    document.getElementById('passwordSection').style.display = 'none';
+    document.getElementById('openSection').style.display = 'none';
+    document.getElementById('subtitle').textContent = 'Shared with you';
+    document.getElementById('playerSection').classList.add('active');
+
+    audio.src = audioUrl || `/api/audio/${trackId}`;
+    audio.play();
+    isPlaying = true;
+    updateBtn();
+
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    source = audioCtx.createMediaElementSource(audio);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    drawWaveform();
+  }
+
+  function togglePlay() {
+    if (isPlaying) audio.pause(); else audio.play();
+    isPlaying = !isPlaying;
+    updateBtn();
+  }
+
+  function updateBtn() {
+    document.getElementById('playIco').style.display = isPlaying ? 'none' : 'block';
+    document.getElementById('pauseIco').style.display = isPlaying ? 'block' : 'none';
+  }
+
+  audio.addEventListener('timeupdate', () => {
+    document.getElementById('curTime').textContent = fmt(audio.currentTime);
+    if (audio.duration) document.getElementById('totTime').textContent = fmt(audio.duration);
+  });
+  audio.addEventListener('ended', () => { isPlaying = false; updateBtn(); });
+
+  function fmt(s) { const m = Math.floor(s/60); return `${m}:${Math.floor(s%60).toString().padStart(2,'0')}`; }
+
+  function drawWaveform() {
+    const canvas = document.getElementById('waveform');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = canvas.offsetWidth * dpr;
+    canvas.height = canvas.offsetHeight * dpr;
+    ctx.scale(dpr, dpr);
+    const W = canvas.offsetWidth, H = canvas.offsetHeight;
+
+    function draw() {
+      animFrame = requestAnimationFrame(draw);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(data);
+      ctx.clearRect(0, 0, W, H);
+      const progress = audio.duration ? audio.currentTime / audio.duration : 0;
+      const barCount = Math.floor(W / 4);
+      const barW = 2, gap = (W - barCount * barW) / (barCount - 1);
+      for (let i = 0; i < barCount; i++) {
+        const v = data[Math.floor(i / barCount * data.length)] / 255;
+        const barH = Math.max(2, v * H * 0.9);
+        const x = i * (barW + gap);
+        ctx.fillStyle = x / W < progress ? 'rgba(167,139,250,0.9)' : 'rgba(167,139,250,0.25)';
+        ctx.fillRect(x, (H - barH) / 2, barW, barH);
+      }
+    }
+    draw();
+    canvas.onclick = (e) => {
+      if (!audio.duration) return;
+      audio.currentTime = ((e.clientX - canvas.getBoundingClientRect().left) / canvas.offsetWidth) * audio.duration;
+    };
+  }
+
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Revis</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #121212; color: #e8e8e8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px;
+    }
+    .logo { font-size: 24px; font-weight: 700; margin-bottom: 32px; letter-spacing: -0.5px; }
+    .logo span { color: #a78bfa; }
+    #sign-in { min-width: 380px; }
+  </style>
+</head>
+<body>
+  <div class="logo"><span>R</span>evis</div>
+  <div id="sign-in"></div>
+
+  <script>
+    async function initClerk() {
+      const { publishableKey } = await fetch('/api/clerk-key').then(r => r.json());
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+      script.crossOrigin = 'anonymous';
+      script.onload = async () => {
+        const clerk = new window.Clerk(publishableKey);
+        await clerk.load();
+        if (clerk.user) {
+          window.location.href = '/';
+          return;
+        }
+        clerk.mountSignIn(document.getElementById('sign-in'), {
+          routing: 'path',
+          path: '/sign-in',
+          signUpUrl: '/sign-up',
+          afterSignInUrl: '/',
+        });
+      };
+      document.head.appendChild(script);
+    }
+    initClerk();
+  </script>
+</body>
+</html>

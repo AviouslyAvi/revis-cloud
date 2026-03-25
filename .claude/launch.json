@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "revis-cloud",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["src/server.js"],
+      "port": 3000,
+      "cwd": "/Users/aviouslyavi/Library/CloudStorage/GoogleDrive-avimusicproductions@gmail.com/My Drive/Google AI Studio/Coding/revis-cloud"
+    }
+  ]
+}
