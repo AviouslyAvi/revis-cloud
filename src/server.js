@@ -23,8 +23,8 @@ app.use(cors({
 app.use(express.json());
 app.use(clerkMiddleware());
 
-// === Static Files ===
-app.use(express.static(path.join(__dirname, '../public')));
+// === Static Files (index: false so landing.html handles `/` instead of index.html) ===
+app.use(express.static(path.join(__dirname, '../public'), { index: false }));
 
 // === Health Check (public) ===
 app.get('/api/health', (req, res) => {
