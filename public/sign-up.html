@@ -31,14 +31,14 @@
         const clerk = new window.Clerk(publishableKey);
         await clerk.load();
         if (clerk.user) {
-          window.location.href = '/';
+          window.location.href = '/app';
           return;
         }
         clerk.mountSignUp(document.getElementById('sign-up'), {
           routing: 'path',
           path: '/sign-up',
           signInUrl: '/sign-in',
-          afterSignUpUrl: '/',
+          afterSignUpUrl: '/app',
         });
       };
       document.head.appendChild(script);

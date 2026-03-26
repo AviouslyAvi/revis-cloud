@@ -67,7 +67,11 @@ app.post('/api/shared/:slug/play', (req, res) => {
   require('./routes/share')(req, res);
 });
 
-// === SPA Fallback ===
+// === Page Routes ===
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/landing.html'));
+});
+
 app.get('/s/:slug', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/share.html'));
 });
@@ -80,9 +84,13 @@ app.get('/sign-up*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/sign-up.html'));
 });
 
+app.get('/app*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'Not found' });
-  res.sendFile(path.join(__dirname, '../public/index.html'));
+  res.sendFile(path.join(__dirname, '../public/landing.html'));
 });
 
 // === Error Handler ===

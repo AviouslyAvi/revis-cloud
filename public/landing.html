@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revis — Music Collaboration Platform</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #121212; --bg-raised: #1a1a1a; --border: #3a3a3a;
+      --text: #e8e8e8; --text-dim: #888;
+      --accent: #a78bfa; --accent-dim: rgba(167,139,250,0.15);
+    }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh; overflow-x: hidden;
+    }
+
+    /* Nav */
+    nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 40px; max-width: 1200px; margin: 0 auto;
+    }
+    .nav-logo { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a {
+      color: var(--text-dim); text-decoration: none; font-size: 14px; font-weight: 500;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .btn-sign-in {
+      background: transparent; color: var(--accent); border: 1px solid var(--accent);
+      padding: 8px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; text-decoration: none;
+    }
+    .btn-sign-in:hover { background: var(--accent-dim); }
+
+    /* Hero */
+    .hero {
+      display: flex; align-items: center; justify-content: center; gap: 80px;
+      max-width: 1200px; margin: 0 auto; padding: 60px 40px 80px;
+      min-height: calc(100vh - 80px);
+    }
+    .hero-content { flex: 1; max-width: 520px; }
+    .hero-badge {
+      display: inline-block; background: var(--accent-dim); color: var(--accent);
+      font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 20px;
+      margin-bottom: 24px; letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .hero-title {
+      font-size: 52px; font-weight: 800; line-height: 1.1;
+      letter-spacing: -1.5px; margin-bottom: 20px;
+    }
+    .hero-title .accent { color: var(--accent); }
+    .hero-desc {
+      font-size: 18px; line-height: 1.6; color: var(--text-dim); margin-bottom: 40px;
+    }
+    .hero-features { display: flex; flex-direction: column; gap: 14px; }
+    .hero-feature {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 15px; color: var(--text-dim);
+    }
+    .hero-feature svg { width: 20px; height: 20px; color: var(--accent); flex-shrink: 0; }
+
+    /* Sign-up card */
+    .hero-signup { flex: 0 0 420px; }
+    .signup-card {
+      background: var(--bg-raised); border: 1px solid var(--border);
+      border-radius: 16px; padding: 36px; position: relative; overflow: hidden;
+    }
+    .signup-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), #6366f1);
+    }
+    .signup-card h2 {
+      font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.3px;
+    }
+    .signup-card .subtitle {
+      font-size: 14px; color: var(--text-dim); margin-bottom: 24px;
+    }
+    #sign-up-widget { min-height: 200px; }
+    /* Clerk widget dark overrides */
+    #sign-up-widget .cl-rootBox { width: 100% !important; }
+    #sign-up-widget .cl-card { background: transparent !important; box-shadow: none !important; border: none !important; padding: 0 !important; }
+
+    /* Footer */
+    .footer {
+      text-align: center; padding: 32px 40px;
+      color: var(--text-dim); font-size: 13px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .hero { flex-direction: column; gap: 48px; padding: 40px 24px 60px; }
+      .hero-content { max-width: 100%; text-align: center; }
+      .hero-title { font-size: 36px; }
+      .hero-features { align-items: center; }
+      .hero-signup { flex: none; width: 100%; max-width: 420px; }
+      nav { padding: 16px 24px; }
+    }
+    @media (max-width: 480px) {
+      .hero-title { font-size: 28px; }
+      .hero-desc { font-size: 16px; }
+      .signup-card { padding: 24px; }
+      .hero-signup { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo"><span>R</span>evis</div>
+  <div class="nav-links">
+    <a href="/sign-in" class="btn-sign-in">Sign In</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Music Collaboration</div>
+    <h1 class="hero-title">Share tracks.<br>Get feedback.<br><span class="accent">Ship music.</span></h1>
+    <p class="hero-desc">
+      Revis is a lightweight platform for producers and artists to upload, version, and collaborate on tracks — all in one place.
+    </p>
+    <div class="hero-features">
+      <div class="hero-feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Track versioning with full history
+      </div>
+      <div class="hero-feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Collaborate with your team in real time
+      </div>
+      <div class="hero-feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Organize stems, BPM, and key metadata
+      </div>
+      <div class="hero-feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        Share tracks with a single link
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-signup">
+    <div class="signup-card">
+      <h2>Get started free</h2>
+      <p class="subtitle">Sign up with Google or email to start collaborating.</p>
+      <div id="sign-up-widget"></div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  Revis — Built for music makers.
+</footer>
+
+<script>
+  async function initClerk() {
+    const { publishableKey } = await fetch('/api/clerk-key').then(r => r.json());
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+    script.crossOrigin = 'anonymous';
+    script.onload = async () => {
+      const clerk = new window.Clerk(publishableKey);
+      await clerk.load();
+      // Already logged in — go straight to the app
+      if (clerk.user) {
+        window.location.href = '/app';
+        return;
+      }
+      clerk.mountSignUp(document.getElementById('sign-up-widget'), {
+        routing: 'virtual',
+        signInUrl: '/sign-in',
+        afterSignUpUrl: '/app',
+      });
+    };
+    document.head.appendChild(script);
+  }
+  initClerk();
+</script>
+</body>
+</html>
