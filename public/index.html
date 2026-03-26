@@ -981,8 +981,9 @@ async function init() {
 
   // Initialize Clerk — load SDK dynamically with publishable key
   const { publishableKey } = await fetch('/api/clerk-key').then(r => r.json());
+  const frontendApi = 'https://more-sunbird-44.clerk.accounts.dev';
   const clerkScript = document.createElement('script');
-  clerkScript.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+  clerkScript.src = `${frontendApi}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`;
   clerkScript.crossOrigin = 'anonymous';
   clerkScript.dataset.clerkPublishableKey = publishableKey;
   clerkScript.async = true;
