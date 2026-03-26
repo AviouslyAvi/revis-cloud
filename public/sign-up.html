@@ -16,6 +16,7 @@
     .logo span { color: #a78bfa; }
     #sign-up { min-width: 380px; }
   </style>
+  <script async crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
 </head>
 <body>
   <div class="logo"><span>R</span>evis</div>
@@ -24,26 +25,27 @@
   <script>
     async function initClerk() {
       const { publishableKey } = await fetch('/api/clerk-key').then(r => r.json());
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
-      script.crossOrigin = 'anonymous';
-      script.onload = async () => {
-        const clerk = new window.Clerk(publishableKey);
-        await clerk.load();
-        if (clerk.user) {
-          window.location.href = '/app';
-          return;
-        }
-        clerk.mountSignUp(document.getElementById('sign-up'), {
-          routing: 'path',
-          path: '/sign-up',
-          signInUrl: '/sign-in',
-          afterSignUpUrl: '/app',
+      if (!window.Clerk) {
+        await new Promise(resolve => {
+          const check = setInterval(() => {
+            if (window.Clerk) { clearInterval(check); resolve(); }
+          }, 100);
         });
-      };
-      document.head.appendChild(script);
+      }
+      const clerk = new window.Clerk(publishableKey);
+      await clerk.load();
+      if (clerk.user) {
+        window.location.href = '/app';
+        return;
+      }
+      clerk.mountSignUp(document.getElementById('sign-up'), {
+        routing: 'path',
+        path: '/sign-up',
+        signInUrl: '/sign-in',
+        afterSignUpUrl: '/app',
+      });
     }
-    initClerk();
+    initClerk().catch(err => console.error('Clerk init failed:', err));
   </script>
 </body>
 </html>
