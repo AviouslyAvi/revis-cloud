@@ -975,6 +975,10 @@ function initSelects() {
 
 // === Init ===
 async function init() {
+  // Populate UI elements first (no auth dependency)
+  initSelects();
+  buildColorPicker();
+
   // Initialize Clerk
   const { publishableKey } = await fetch('/api/clerk-key').then(r => r.json());
   if (!window.Clerk) {
@@ -995,8 +999,6 @@ async function init() {
 
   // Update identity from Clerk
   updateIdentityFromClerk();
-  initSelects();
-  buildColorPicker();
   await Promise.all([loadProjects(), loadTracks()]);
   render();
   setupDragDrop();
@@ -2653,7 +2655,7 @@ document.querySelectorAll('.modal-bg').forEach(el => {
   el.addEventListener('click', (e) => { if (e.target === el) el.classList.remove('visible'); });
 });
 
-init();
+init().catch(err => console.error('Init failed:', err));
 </script>
 </body>
 </html>
