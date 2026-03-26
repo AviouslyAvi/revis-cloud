@@ -1262,7 +1262,6 @@ async function submitTrackUpload() {
   const bpm = document.getElementById('uploadBpm').value.trim();
   const key = document.getElementById('uploadKey').value;
   if (!bpm) { toast('BPM is required'); return; }
-  if (!key) { toast('Key is required'); return; }
   const collab = getCollaboratorName() || 'Unknown';
 
   for (const file of files) {
