@@ -989,9 +989,10 @@ async function init() {
   document.head.appendChild(clerkScript);
   await new Promise(resolve => {
     const check = setInterval(() => {
-      if (window.Clerk && window.Clerk.loaded) { clearInterval(check); resolve(); }
+      if (window.Clerk) { clearInterval(check); resolve(); }
     }, 100);
   });
+  await window.Clerk.load();
   clerkInstance = window.Clerk;
 
   if (!clerkInstance.user) {
