@@ -161,8 +161,9 @@
 <script>
   async function initClerk() {
     const { publishableKey } = await fetch('/api/clerk-key').then(r => r.json());
+    const frontendApi = 'https://more-sunbird-44.clerk.accounts.dev';
     const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+    script.src = `${frontendApi}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`;
     script.crossOrigin = 'anonymous';
     script.dataset.clerkPublishableKey = publishableKey;
     script.async = true;

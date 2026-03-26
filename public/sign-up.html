@@ -15,27 +15,41 @@
     .logo { font-size: 24px; font-weight: 700; margin-bottom: 32px; letter-spacing: -0.5px; }
     .logo span { color: #a78bfa; }
     #sign-up { min-width: 380px; }
+    .loading-msg { color: #888; font-size: 14px; text-align: center; }
+    .error-msg { color: #f87171; font-size: 14px; text-align: center; margin-top: 16px; display: none; }
   </style>
 </head>
 <body>
   <div class="logo"><span>R</span>evis</div>
-  <div id="sign-up"></div>
+  <div id="sign-up"><p class="loading-msg">Loading sign-up...</p></div>
+  <p id="error-msg" class="error-msg"></p>
 
   <script>
     async function initClerk() {
-      const { publishableKey } = await fetch('/api/clerk-key').then(r => r.json());
+      const resp = await fetch('/api/clerk-key');
+      if (!resp.ok) throw new Error('Failed to fetch Clerk key');
+      const { publishableKey } = await resp.json();
+      if (!publishableKey) throw new Error('Clerk publishable key is not configured');
+
+      const frontendApi = 'https://more-sunbird-44.clerk.accounts.dev';
       const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+      script.src = `${frontendApi}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`;
       script.crossOrigin = 'anonymous';
       script.dataset.clerkPublishableKey = publishableKey;
       script.async = true;
       document.head.appendChild(script);
-      await new Promise(resolve => {
+
+      await new Promise((resolve, reject) => {
+        script.onerror = () => reject(new Error('Failed to load Clerk SDK'));
+        let attempts = 0;
         const check = setInterval(() => {
           if (window.Clerk) { clearInterval(check); resolve(); }
+          if (++attempts > 150) { clearInterval(check); reject(new Error('Clerk SDK timed out')); }
         }, 100);
       });
+
       await window.Clerk.load();
+
       if (window.Clerk.user) {
         window.location.href = '/app';
         return;
@@ -47,7 +61,13 @@
         afterSignUpUrl: '/app',
       });
     }
-    initClerk().catch(err => console.error('Clerk init failed:', err));
+    initClerk().catch(err => {
+      console.error('Clerk init failed:', err);
+      document.getElementById('sign-up').innerHTML = '';
+      const el = document.getElementById('error-msg');
+      el.style.display = 'block';
+      el.textContent = 'Sign-up failed to load. ' + err.message;
+    });
   </script>
 </body>
 </html>
