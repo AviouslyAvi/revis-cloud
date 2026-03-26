@@ -108,7 +108,6 @@
       .hero-signup { max-width: 100%; }
     }
   </style>
-  <script async crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
 </head>
 <body>
 
@@ -162,21 +161,23 @@
 <script>
   async function initClerk() {
     const { publishableKey } = await fetch('/api/clerk-key').then(r => r.json());
-    if (!window.Clerk) {
-      await new Promise(resolve => {
-        const check = setInterval(() => {
-          if (window.Clerk) { clearInterval(check); resolve(); }
-        }, 100);
-      });
-    }
-    const clerk = new window.Clerk(publishableKey);
-    await clerk.load();
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+    script.crossOrigin = 'anonymous';
+    script.dataset.clerkPublishableKey = publishableKey;
+    script.async = true;
+    document.head.appendChild(script);
+    await new Promise(resolve => {
+      const check = setInterval(() => {
+        if (window.Clerk && window.Clerk.loaded) { clearInterval(check); resolve(); }
+      }, 100);
+    });
     // Already logged in — go straight to the app
-    if (clerk.user) {
+    if (window.Clerk.user) {
       window.location.href = '/app';
       return;
     }
-    clerk.mountSignUp(document.getElementById('sign-up-widget'), {
+    window.Clerk.mountSignUp(document.getElementById('sign-up-widget'), {
       routing: 'virtual',
       signInUrl: '/sign-in',
       afterSignUpUrl: '/app',

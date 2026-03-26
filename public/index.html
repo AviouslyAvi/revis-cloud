@@ -541,7 +541,7 @@
     }
     .shortcut-desc { font-size: 13px; color: var(--text-dim); display: flex; align-items: center; }
   </style>
-  <script async crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+
 </head>
 <body>
 
@@ -979,18 +979,20 @@ async function init() {
   initSelects();
   buildColorPicker();
 
-  // Initialize Clerk
+  // Initialize Clerk — load SDK dynamically with publishable key
   const { publishableKey } = await fetch('/api/clerk-key').then(r => r.json());
-  if (!window.Clerk) {
-    // Wait for Clerk SDK to load
-    await new Promise(resolve => {
-      const check = setInterval(() => {
-        if (window.Clerk) { clearInterval(check); resolve(); }
-      }, 100);
-    });
-  }
-  clerkInstance = new window.Clerk(publishableKey);
-  await clerkInstance.load();
+  const clerkScript = document.createElement('script');
+  clerkScript.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+  clerkScript.crossOrigin = 'anonymous';
+  clerkScript.dataset.clerkPublishableKey = publishableKey;
+  clerkScript.async = true;
+  document.head.appendChild(clerkScript);
+  await new Promise(resolve => {
+    const check = setInterval(() => {
+      if (window.Clerk && window.Clerk.loaded) { clearInterval(check); resolve(); }
+    }, 100);
+  });
+  clerkInstance = window.Clerk;
 
   if (!clerkInstance.user) {
     window.location.href = '/';
